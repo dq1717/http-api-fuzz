@@ -35,7 +35,7 @@ def print_mutated_json(number):
     for i in range(1, number):
         sum.append(factory.fuzzed)
 
-    print sum
+    print(sum)
 
 
 if __name__ == '__main__':

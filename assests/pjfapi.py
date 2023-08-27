@@ -30,27 +30,27 @@ SOFTWARE.
 
 """
 
-from BaseHTTPServer import BaseHTTPRequestHandler
+from http.server import BaseHTTPRequestHandler
 
 try:
     from pyjfuzz.lib import PJFConfiguration
     from pyjfuzz.lib import PJFFactory
 except ImportError:
-    print "[!] Can't find PyJFuzz API library, please install with: 'git clone https://github.com/mseclab/PyJFuzz.git'"
-    print "[!] One done install with: 'sudo python setup.py install'"
+    print("[!] Can't find PyJFuzz API library, please install with: 'git clone https://github.com/mseclab/PyJFuzz.git'")
+    print("[!] One done install with: 'sudo python setup.py install'")
     exit(-1)
 from argparse import Namespace
-from StringIO import StringIO
+from io import StringIO
 from threading import Thread
 from threading import Lock
 import multiprocessing
 import argparse
-import httplib
+import http.client
 import hashlib
 import socket
 import signal
-import urllib
-import Queue
+import urllib.request, urllib.parse, urllib.error
+import queue
 import time
 import json
 import ssl
@@ -60,7 +60,7 @@ import re
 
 from my_logger import logger
 
-print_queue = Queue.Queue(0)
+print_queue = queue.Queue(0)
 
 
 def printer_thread():
@@ -166,7 +166,7 @@ def make_request(ip, port, data, secure=False, debug=False):
                 url = "https://{0}{1}".format(data.headers["Host"], data.path)
             # connect to the host
             #  Disable certificate checking with ssl
-            connection = httplib.HTTPSConnection(ip, port, timeout=10,
+            connection = http.client.HTTPSConnection(ip, port, timeout=10,
                                                  context=ssl._create_unverified_context())
         else:
             #  if we are over http but we don't have a standard port let's put it inside url
@@ -177,7 +177,7 @@ def make_request(ip, port, data, secure=False, debug=False):
                 #  otherwise use http procolo
                 url = "http://{0}{1}".format(data.headers["Host"], data.path)
             # connect to the host
-            connection = httplib.HTTPConnection(ip, port, timeout=10)
+            connection = http.client.HTTPConnection(ip, port, timeout=10)
         # init the timer in order to get execution time
         start_time = time.time()
         #  get the full response
@@ -287,7 +287,7 @@ def check_template(data):
                 return matches[0], False
             except:
                 #  otherwise
-                j = json.loads(urllib.unquote(matches[0]))
+                j = json.loads(urllib.parse.unquote(matches[0]))
                 if type(j) not in [dict, list]:
                     raise Exception("Invalid injection point value (not JSON)!")
                 return matches[0], True
@@ -354,7 +354,7 @@ def fuzzer_process(ip, port, data, secure=False, max_threads=10,
     """
     Represent a fuzzer process it starts some threads which do the actual job
     """
-    fuzzer_queue = Queue.Queue(0)
+    fuzzer_queue = queue.Queue(0)
     threads = []
     global_thread_lock = Lock()
     #  check the template and get the original payload
@@ -377,7 +377,7 @@ def fuzzer_process(ip, port, data, secure=False, max_threads=10,
                         clean_template(data, fuzzed)), secure)
                     # we really got a result? :D
                     if result[1] > 0:
-                        print result  # add by hzx
+                        print(result)  # add by hzx
                         break
                     else:
                         #  maybe we are going to fast?
@@ -422,7 +422,7 @@ def fuzzer_process(ip, port, data, secure=False, max_threads=10,
         threads[-1].start()
     # init PyJFuzz configuration (see documentation)
     config = PJFConfiguration(Namespace(
-        json=json.loads(urllib.unquote(org_payload)) if encoded else json.loads(
+        json=json.loads(urllib.parse.unquote(org_payload)) if encoded else json.loads(
             org_payload),
         level=6,
         strong_fuzz=s_fuzz,
@@ -522,10 +522,10 @@ def main(config):
     #  let's notify the user that we are starting the real fuzzing now!
     print_queue.put("Start fuzzing in a few seconds...")
     #  start processes and return a process pool
-    print (config.host, config.port, config.data,
+    print((config.host, config.port, config.data,
            config.secure, process_queue, statistics,
            config.process_num, config.thread_num,
-           config.strong_fuzz)
+           config.strong_fuzz))
 
 
     process_pool = start_processes(config.host, config.port, config.data,

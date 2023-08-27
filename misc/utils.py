@@ -11,7 +11,7 @@ def random_header(order_dict):
 
     # random remove one header
     if action == 1:
-        order_dict.pop(random.choice(order_dict.keys()))
+        order_dict.pop(random.choice(list(order_dict.keys())))
         d = order_dict
 
     # random add one

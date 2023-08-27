@@ -1,11 +1,11 @@
 import random
-import urlparse
+import urllib.parse
 
 from misc.utils import id_generator
 
 
 def fuzz_url_path(url):
-    r = urlparse.urlparse(url)
+    r = urllib.parse.urlparse(url)
     url_path = r.path
     path_elem = str(url_path).split('/')
 
@@ -27,4 +27,4 @@ def fuzz_url_path(url):
 if __name__ == '__main__':
     test_url = "http://10.187.3.58:8774/v2/9ac08939bf67465c88cd638107e0a6d6/os-tag-types/11/extra-specs"
     for i in range(100):
-        print fuzz_url_path(test_url)
+        print(fuzz_url_path(test_url))

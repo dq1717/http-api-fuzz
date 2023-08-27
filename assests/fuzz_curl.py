@@ -4,9 +4,9 @@ import multiprocessing
 import os
 import signal
 import time
-import urlparse
+import urllib.parse
 import uncurl_lib
-import pjfapi
+from . import pjfapi
 
 
 def dump_json_header_to_string(header_data):
@@ -22,7 +22,7 @@ def dump_json_header_to_string(header_data):
 def uncurl_url_link(url_link):
     result_string, result_dict = uncurl_lib.parse(url_link)
 
-    uncurl_url = urlparse.urlparse(result_dict["url"])
+    uncurl_url = urllib.parse.urlparse(result_dict["url"])
     uncurl_method = str(result_dict["method"]).upper()
     uncurl_data = result_dict["data_token"]
     uncurl_header_json = result_dict["headers_token"]
